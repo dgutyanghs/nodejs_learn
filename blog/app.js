@@ -22,8 +22,13 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.use('/', routes);
-app.use('/users', users);
+// app.use('/', routes);
+// app.use('/users', users);
+routes(app);
+
+app.listen(app.get('port'), function() {
+    console.log('express server listening on port' + app.get('port'));
+});
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
