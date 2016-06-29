@@ -21,6 +21,13 @@ module.exports = function(app) {
     app.post('/login', function(req, res) {
     });
 
+    app.get('/myRegisterTest', function(req, res) {
+        res.render('Reg', {title:'Register'});
+    });
+
+    app.post('/reg', function(req, res) {
+    });
+
     app.get('/post', function(req, res) {
         res.render('post', {title:'compose'});
     });
