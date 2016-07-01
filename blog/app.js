@@ -14,11 +14,21 @@ var MongoStore = require('connect-mongo')(session);
 
 var app = express();
 
+app.use(flash());
+
+app.use(session({
+    resave:true,
+    saveUninitialized:true,
+    secret:settings.cookieSecret,
+    key:settings.db,
+    cookie:{maxAge:1000 * 60 * 24 * 30},
+    store:new MongoStore({
+        url: 'mongodb://localhost/blog'
+    })
+}));
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
-
-app.use(flash());
 
 // uncomment after placing your favicon in /public
 // app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
@@ -28,8 +38,6 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// app.use('/', routes);
-// app.use('/users', users);
 routes(app);
 
 app.listen(app.get('port'), function() {
@@ -68,18 +76,6 @@ app.use(function(err, req, res, next) {
 });
 
 
-
-app.use(session({
-    resave:true,
-    saveUninitialized:true,
-    secret:settings.cookieSecret,
-    key:settings.db,
-    cookie:{maxAge:1000 * 60 * 24 * 30},
-    store:new MongoStore({
-        url: 'mongodb://localhost/blog'
-    })
-
-}));
 
 
 
