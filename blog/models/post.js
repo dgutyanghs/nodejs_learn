@@ -1,4 +1,5 @@
 var mongodb = require('./db');
+var markdown = require('markdown').markdown;
 
 function Post(name, title, post) {
   this.name = name;
@@ -25,7 +26,8 @@ Post.prototype.save = function(callback) {
       name: this.name,
       time: time,
       title: this.title,
-      post: this.post
+      post: this.post,
+      comments: [ ]
   };
   //打开数据库
   mongodb.open(function (err, db) {
@@ -53,22 +55,25 @@ Post.prototype.save = function(callback) {
 };
 
 //读取文章及其相关信息
-Post.get = function(name, callback) {
+Post.getAll = function(name, callback) {
   //打开数据库
   mongodb.open(function (err, db) {
     if (err) {
       return callback(err);
     }
+
     //读取 posts 集合
     db.collection('posts', function(err, collection) {
       if (err) {
         mongodb.close();
         return callback(err);
       }
+
       var query = {};
       if (name) {
         query.name = name;
       }
+
       //根据 query 对象查询文章
       collection.find(query).sort({
         time: -1
@@ -77,8 +82,48 @@ Post.get = function(name, callback) {
         if (err) {
           return callback(err);//失败！返回 err
         }
-        callback(null, docs);//成功！以数组形式返回查询的结果
+          docs.forEach(function (doc) {
+              doc.post = markdown.toHTML(doc.post);
+          });
+          callback(null, docs);//成功！以数组形式返回查询的结果,
       });
     });
   });
+};
+
+//获取一篇文章
+Post.getOne = function(name, day, title, callback) {
+    //打开数据库
+    mongodb.open(function (err, db) {
+        if (err) {
+            return callback(err);
+        }
+        //读取 posts 集合
+        db.collection('posts', function (err, collection) {
+            if (err) {
+                mongodb.close();
+                return callback(err);
+            }
+            //根据用户名、发表日期及文章名进行查询
+            collection.findOne({
+                "name": name,
+                "time.day": day,
+                "title": title
+            }, function (err, doc) {
+                mongodb.close();
+                if (err) {
+                    return callback(err);
+                }
+                //解析 markdown 为 html
+                // doc.post = markdown.toHTML(doc.post);
+                if (doc) {
+                    doc.post = markdown.toHTML(doc.post);
+                    doc.comments.forEach(function (comment) {
+                        comment.content = markdown.toHTML(comment.content);
+                    });
+                }
+                callback(null, doc);//返回查询的一篇文章
+            });
+        });
+    });
 };
