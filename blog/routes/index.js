@@ -1,6 +1,7 @@
 var crypto = require('crypto'),
     User = require('../models/user.js'),
     Post = require('../models/post.js');
+
 var Comment = require('../models/comment.js');
 
 var multer = require('multer');
